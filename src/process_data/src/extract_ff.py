@@ -151,14 +151,31 @@ def main_kinetics400(v_root, frame_root, flow_root):
                 (p, frame_root_real, flow_root_real) for p in tqdm(v_paths, total=len(v_paths))) 
 
 
+def main_MSR_VTT(v_root, frame_root, flow_root):
+    print('extracting MSR_VTT ... ')
+    print('extracting videos from %s' % v_root)
+    print('frame save to %s' % frame_root)
+    print('flow save to %s' % flow_root)
+    
+    if not os.path.exists(frame_root): os.makedirs(frame_root)
+    if not os.path.exists(flow_root): os.makedirs(flow_root)
+
+    v_act_root = glob.glob(os.path.join(v_root, '*/'))
+    for i, j in tqdm(enumerate(v_act_root), total=len(v_act_root)):
+        v_paths = glob.glob(os.path.join(j, '*.mp4'))
+        v_paths = sorted(v_paths)
+        Parallel(n_jobs=32)(delayed(extract_ff_opencv)\
+            (p, frame_root, flow_root) for p in tqdm(v_paths, total=len(v_paths)))
+
+
 if __name__ == '__main__':
     # edit 'your_path' here: 
 
     parser = argparse.ArgumentParser()
-    parser.add_argument("--v_root", type=str, default='/home/mtoering/data_dpc/UCF101/videos')
-    parser.add_argument("--frame_root", type=str, default='/home/mtoering/data_dpc/UCF101/frame')
-    parser.add_argument("--flow_root", type=str, default='/home/mtoering/data_dpc/UCF101/flow')
-    parser.add_argument("--dataset", type=str, default='ucf101')
+    parser.add_argument("--v_root", type=str, default='/mydata/MSR_VTT_Dataset/TrainValVideo')
+    parser.add_argument("--frame_root", type=str, default='/mydata/MSR_VTT_Dataset/frame')
+    parser.add_argument("--flow_root", type=str, default='/mydata/MSR_VTT_Dataset/flow')
+    parser.add_argument("--dataset", type=str, default='msr_vtt')
 
     args = parser.parse_args()
 
@@ -170,3 +187,6 @@ if __name__ == '__main__':
 
     if args.dataset == 'k-400':
         main_kinetics400(v_root=args.v_root, frame_root=args.frame_root, flow_root=args.flow_root)
+
+    if args.dataset == 'msr_vtt':
+        main_MSR_VTT(v_root=args.v_root, frame_root=args.frame_root, flow_root=args.flow_root)
